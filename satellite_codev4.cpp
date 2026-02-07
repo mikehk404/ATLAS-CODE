@@ -2,7 +2,7 @@
 * PROJECT: ATLAS_ASCEND 1.2 - DISASTER WARNING SATELLITE
 * VERSION: 4.0 (Final Release - SD Buffer & Image Chunking)
 * HARDWARE: ESP32-S3 + LoRa + GPS + Sensors + OV2640 + MicroSD
-* AUTHOR: [Tên Đội Thi]
+* AUTHOR: [VN7-ATLAS]
 */
 
 #include <Wire.h>
