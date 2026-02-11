@@ -4,7 +4,6 @@
 ![Hardware](https://img.shields.io/badge/Hardware-ESP32_S3_%7C_ESP32_CAM_%7C_ESP32_WROOM-blue?style=flat-square)
 ![Telemetry](https://img.shields.io/badge/Telemetry-LoRa_433MHz-orange?style=flat-square)
 ![AI-Engine](https://img.shields.io/badge/AI_Engine-Scikit_Learn_%7C_RandomForest-red?style=flat-square)
-![License](https://img.shields.io/badge/License-MIT-green?style=flat-square)
 
 > **Team:** VN7-ATLAS  
 > **Event:** ASCEND 2026  
