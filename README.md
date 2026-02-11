@@ -120,19 +120,3 @@ Format: `GN,[ID],[TYPE],[TEMP],[HUM],[PRES],[SOIL],[VIB],[LAT],[LON]`
 Format: `TM:[VOLT],[LAT],[LON],[ALT],[STATUS]`
 
 ---
-
-## 🛠️ Installation & Setup
-
-### Directory Structure
-```text
-VN7-ATLAS_ASCEND/
-├── README.md               # This file
-├── Ground_Node/            # Firmware for Fab Four Sensors
-│   └── Ground_Node_Firmware.ino
-├── Sat_Master/             # Firmware for Satellite OBC
-│   └── Master_Node.ino
-├── Sat_Slave/              # Firmware for Satellite Camera
-│   └── Slave_Node.ino
-└── AI_Ground_Station/      # Python Machine Learning Core
-    ├── disaster_model.py
-    └── nodes_data.txt
