@@ -13,7 +13,7 @@
 
 ## 📖 Project Overview
 
-**ATLAS_ASCEND 1.2** is a comprehensive disaster monitoring ecosystem designed for infrastructure-denied regions. It integrates a distributed **Wireless Sensor Network (WSN)** with a **CubeSat Relay Node** and an **AI-driven Ground Station** to provide resilient early warnings for landslides, floods, and forest fires.
+**ATLAS_ASCEND 1.2** is a comprehensive disaster monitoring ecosystem designed for infrastructure-denied regions. It integrates a distributed **Ground Sensor Network (GSN)** with a **CubeSat Relay Node** and an **AI-driven Ground Station** to provide resilient early warnings for landslides, floods, and forest fires.
 
 The system moves beyond traditional "Threshold-based" monitoring by implementing **"Proactive Detection"** philosophy, utilizing **Rate-of-Change (RoC)** algorithms at the edge and **Machine Learning** at the core.
 
