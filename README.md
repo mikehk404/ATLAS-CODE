@@ -70,8 +70,8 @@ To prevent the satellite from "freezing" during image processing, we utilize a d
 | **LoRa (SX1278)** | NSS (CS) | 5 | SPI Bus |
 | | RST | 14 | |
 | | DIO0 | 2 | Interrupt |
-| **I2C Bus** | SDA | 21 | BME280 + MPU6050 |
-| | SCL | 22 | BME280 + MPU6050 |
+| **I2C Bus** | SDA | 42 | BME280 + MPU6050 |
+| | SCL | 41 | BME280 + MPU6050 |
 | **Soil Sensor** | Signal | 34 | **Analog Input Only** |
 | **GPS (NEO-M8N)** | TX | 16 | Connect to GPS TX |
 | | RX | 17 | Connect to GPS RX |
