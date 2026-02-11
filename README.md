@@ -1,59 +1,83 @@
-# ATLAS-CODE
-# 🛰️ ATLAS_ASCEND 1.2 - Disaster Warning CubeSat
+# 📡 ATLAS_ASCEND 1.2 - Integrated Disaster Warning Ecosystem
 
-![Status](https://img.shields.io/badge/Status-Release_Candidate-success)
-![Hardware](https://img.shields.io/badge/Hardware-ESP32--S3_%7C_ESP32--CAM-blue)
-![Telemetry](https://img.shields.io/badge/Telemetry-LoRa_433MHz-orange)
-![Platform](https://img.shields.io/badge/Platform-Arduino_IDE_%7C_FreeRTOS-green)
+![Status](https://img.shields.io/badge/Status-Release_Candidate-success?style=flat-square)
+![Hardware](https://img.shields.io/badge/Hardware-ESP32_S3_%7C_ESP32_CAM_%7C_ESP32_WROOM-blue?style=flat-square)
+![Telemetry](https://img.shields.io/badge/Telemetry-LoRa_433MHz-orange?style=flat-square)
+![AI-Engine](https://img.shields.io/badge/AI_Engine-Scikit_Learn_%7C_RandomForest-red?style=flat-square)
+![License](https://img.shields.io/badge/License-MIT-green?style=flat-square)
 
 > **Team:** VN7-ATLAS  
 > **Event:** ASCEND 2026  
-> **Version:** 5.0 (Master-Slave Distributed Architecture)
+> **Version:** 5.2 (Hybrid Ground-Satellite Architecture)
+
+---
 
 ## 📖 Project Overview
 
-**ATLAS_ASCEND 1.2** is a CubeSat flight software designed for disaster monitoring (landslide detection & environmental sensing). 
+**ATLAS_ASCEND 1.2** is a comprehensive disaster monitoring ecosystem designed for infrastructure-denied regions. It integrates a distributed **Wireless Sensor Network (WSN)** with a **CubeSat Relay Node** and an **AI-driven Ground Station** to provide resilient early warnings for landslides, floods, and forest fires.
 
-Unlike traditional single-core systems, this project utilizes a **Distributed Master-Slave Architecture** to handle high-resolution image processing without compromising real-time telemetry stability.
-
-### 🏗️ System Architecture
-
-The system consists of two independent processing units communicating via High-Speed UART (460800 baud):
-
-1.  **MASTER NODE (OBC - On Board Computer):**
-    * **Hardware:** ESP32-S3 DevKit V1.
-    * **Role:** Mission Control. It handles GPS navigation, environmental sensing (BME280/MPU6050), and Long-Range communication (LoRa). It acts as the "Brain".
-2.  **SLAVE NODE (Payload):**
-    * **Hardware:** AI Thinker ESP32-CAM.
-    * **Role:** Image Acquisition. It handles the camera (OV2640), SD Card buffering, and data fragmentation. It acts as the "Eye".
+The system moves beyond traditional "Threshold-based" monitoring by implementing **"Proactive Detection"** philosophy, utilizing **Rate-of-Change (RoC)** algorithms at the edge and **Machine Learning** at the core.
 
 ---
 
-## 🚀 Key Engineering Features
+## 🏗️ System Architecture
 
-### 1. Sequential Image Transmission (Chunking Protocol)
-Sending a 50KB image directly via UART or LoRa would cause a **Stack Overflow** or block the main thread for seconds. We solved this by implementing a **"Chunking & Flow Control"** mechanism:
-* **Step 1:** Slave saves the full image to the SD Card (Buffer).
-* **Step 2:** Master requests image size (Handshake).
-* **Step 3:** Master requests data in small **200-byte chunks**.
-* **Step 4:** Slave seeks to the specific file offset and sends raw binary data.
-* **Result:** Zero RAM overflow, stable transmission even with large files.
+The ecosystem is defined by three synchronized operational layers:
 
-### 2. Multi-threading with FreeRTOS
-The Master Node utilizes the dual-core architecture of the ESP32-S3:
-* **Core 0 (TaskSystem):** Handles critical sensors, GPS, and LoRa telemetry (High Priority).
-* **Core 1 (TaskVision):** Handles the time-consuming image transfer process (Lower Priority).
-* **Benefit:** The satellite never "freezes" while processing images. Telemetry is sent every 5 seconds regardless of camera status.
+### 1. 🌍 GROUND SEGMENT (The "Fab Four" Sensor Nodes)
+Distributed autonomous nodes deployed in high-risk zones (mountains, riverbanks).
+* **MCU:** ESP32-WROOM-32 (Optimized for Deep Sleep).
+* **Sensor Stack ("The Fab Four"):**
+    1.  **Soil:** Capacitive Moisture Sensor (Landslide/Flood Saturation).
+    2.  **Kinematics:** MPU-6050 6-DOF IMU (Seismic Activity/Slope Stability).
+    3.  **Climate:** BME280 (Temp/Hum/Pressure for Fire & Storm Prediction).
+    4.  **Geolocation:** NEO-M8N GNSS (Precise Hazard Mapping).
+* **Edge Logic:** Performs **Rate-of-Change (RoC)** analysis to detect rapid environmental shifts (e.g., Flash Floods) before critical thresholds are reached.
 
-### 3. Hardware Optimization
-* **High-Speed UART:** Overclocked internal UART to **460800 baud** (4x standard speed) to minimize latency between Master and Slave.
-* **Brownout Protection:** Disabled Brownout Detector on ESP32-CAM to prevent resets during high-current spikes (Flash/SD write).
-* **1-Bit SD Mode:** Configured SD Card in 1-bit mode to free up pins and avoid conflict with the on-board Flash LED.
+### 2. 🛰️ SPACE SEGMENT (1U CubeSat Relay)
+A 1U Satellite acting as a Data Relay and Optical Verification node.
+* **Master Node (ESP32-S3):** Handles Navigation (GPS), Telemetry (LoRa), and Mission Control via **FreeRTOS**.
+* **Slave Node (ESP32-CAM):** Dedicated to High-Resolution Imaging and buffering via a custom **Binary Chunking Protocol**.
+
+### 3. 🖥️ PROCESSING SEGMENT (AI Ground Station)
+A centralized server running Python & Scikit-learn.
+* **Algorithm:** **Random Forest Regression**.
+* **Function:** Analyzes multi-variate correlations (Pressure Drop + Soil Saturation + Vibration) to predict disaster probability scores (0-100%).
 
 ---
 
-## 🔌 Pin Mapping (Wiring)
+## 🚀 Key Engineering Innovations
 
+### A. "Rate-of-Change" (RoC) Trigger
+Unlike passive loggers that only alarm at static thresholds (e.g., >90% moisture), ATLAS nodes calculate the **first derivative (velocity)** of sensor data.
+* *Scenario:* If soil moisture spikes >10% in 5 minutes, the system triggers a **"Flash Flood Alert"** immediately, even if the absolute value is only 50%.
+
+### B. Master-Slave Satellite Core
+To prevent the satellite from "freezing" during image processing, we utilize a dual-core distributed architecture:
+* **Core 0 (Master):** Handles Telemetry & Navigation (High Priority).
+* **Core 1 (Slave):** Handles Image Compression & Fragmentation (Low Priority).
+
+### C. Adaptive Power Management
+* **Normal Mode:** Deep Sleep for 5 minutes (<20µA).
+* **Urgent Mode:** Deep Sleep for 1 minute (Active Monitoring) upon detecting RoC anomalies.
+
+---
+
+## 🔌 Pin Mapping (Hardware Wiring)
+
+### 1. Ground Sensor Node (ESP32-WROOM)
+| Component | Pin Name | GPIO (ESP32) | Note |
+| :--- | :--- | :--- | :--- |
+| **LoRa (SX1278)** | NSS (CS) | 5 | SPI Bus |
+| | RST | 14 | |
+| | DIO0 | 2 | Interrupt |
+| **I2C Bus** | SDA | 21 | BME280 + MPU6050 |
+| | SCL | 22 | BME280 + MPU6050 |
+| **Soil Sensor** | Signal | 34 | **Analog Input Only** |
+| **GPS (NEO-M8N)** | TX | 16 | Connect to GPS TX |
+| | RX | 17 | Connect to GPS RX |
+
+### 2. Satellite
 ### Master Node (ESP32-S3)
 | Component | Pin Name | GPIO (S3) | Note |
 | :--- | :--- | :--- | :--- |
@@ -82,52 +106,34 @@ The Master Node utilizes the dual-core architecture of the ESP32-S3:
 
 ---
 
+## 📊 Telemetry Data Format
+
+### 1. Ground Node Packet (Uplink)
+Format: `GN,[ID],[TYPE],[TEMP],[HUM],[PRES],[SOIL],[VIB],[LAT],[LON]`
+
+| Field | Description | Example |
+| :--- | :--- | :--- |
+| **TYPE** | Hazard Class | `NORMAL`, `FIRE_RISK`, `STORM_ALERT`, `LANDSLIDE` |
+| **PRES** | Pressure (hPa) | `990.2` (Low pressure indicates storm) |
+| **VIB** | Vibration (G) | `1.5` (Seismic activity) |
+
+### 2. Satellite Heartbeat (Downlink)
+Format: `TM:[VOLT],[LAT],[LON],[ALT],[STATUS]`
+
+---
+
 ## 🛠️ Installation & Setup
 
-### Prerequisites
-* **IDE:** Arduino IDE 2.x
-* **Board Manager:** `esp32` by Espressif Systems (v2.0.11 or newer).
-
-### Required Libraries
-Install these via Arduino Library Manager:
-1.  `LoRa` by Sandeep Mistry
-2.  `TinyGPSPlus` by Mikal Hart
-3.  `Adafruit Unified Sensor`
-4.  `Adafruit BME280 Library`
-5.  `Adafruit MPU6050`
-6.  `Adafruit INA219`
-
-### Flashing Instructions
-1.  **Master Node:**
-    * Select Board: `ESP32S3 Dev Module`.
-    * **USB CDC On Boot:** "Enable" (Important for Serial Monitor).
-    * Upload `Master_Node/Master_Node.ino`.
-2.  **Slave Node:**
-    * Select Board: `AI Thinker ESP32-CAM`.
-    * **PSRAM:** "Enabled" (Critical for High-Res images).
-    * **Partition Scheme:** "Huge APP".
-    * Upload `Slave_Node/Slave_Node.ino`.
-
----
-
-## 📊 Telemetry Format
-
-**Downlink Packet (CSV Format):**
-`TM:[VOLT],[LAT],[LON],[ALT],[STATUS]`
-
-* `VOLT`: Battery Voltage (V)
-* `LAT/LON`: GPS Coordinates (Decimal Degrees)
-* `ALT`: Altitude (Meters)
-* `STATUS`: System Health Flag (e.g., "OK", "ERR_CAM")
-
-**Example:**
-`TM:4.15,21.028511,105.854200,150.5,OK`
-
----
-
-## 👨‍💻 Authors & Acknowledgments
-
-**Team VN7-ATLAS**
-* Lead Developer: [Le Duc Minh]
-
-*Special thanks to the open-source community for the libraries used in this project.*
+### Directory Structure
+```text
+VN7-ATLAS_ASCEND/
+├── README.md               # This file
+├── Ground_Node/            # Firmware for Fab Four Sensors
+│   └── Ground_Node_Firmware.ino
+├── Sat_Master/             # Firmware for Satellite OBC
+│   └── Master_Node.ino
+├── Sat_Slave/              # Firmware for Satellite Camera
+│   └── Slave_Node.ino
+└── AI_Ground_Station/      # Python Machine Learning Core
+    ├── disaster_model.py
+    └── nodes_data.txt
