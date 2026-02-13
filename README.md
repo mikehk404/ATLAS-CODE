@@ -38,10 +38,31 @@ A 1U Satellite acting as a Data Relay and Optical Verification node.
 * **Master Node (ESP32-S3):** Handles Navigation (GPS), Telemetry (LoRa), and Mission Control via **FreeRTOS**.
 * **Slave Node (ESP32-CAM):** Dedicated to High-Resolution Imaging and buffering via a custom **Binary Chunking Protocol**.
 
-### 3. 🖥️ PROCESSING SEGMENT (AI Ground Station)
-A centralized server running Python & Scikit-learn.
-* **Algorithm:** **Random Forest Regression**.
-* **Function:** Analyzes multi-variate correlations (Pressure Drop + Soil Saturation + Vibration) to predict disaster probability scores (0-100%).
+### 3. 🖥️ PROCESSING SEGMENT (Predictive Analytics Engine)
+
+The Ground Station functions as the ecosystem's **Central Intelligence Core**, designed to transition disaster management from *reactive monitoring* to *proactive forecasting*. It performs **Multi-Modal Data Fusion**, aggregating real-time telemetry from the Ground Mesh Network with satellite imagery baselines.
+
+#### A. Core Architecture: Sensor Fusion & Machine Learning 🧠
+The system utilizes a **Random Forest Regressor** (via `scikit-learn`) to model non-linear environmental correlations, generating a precise **Disaster Probability Score ($0-100\%$)**.
+
+| Input Source | Data Type | Function in Model |
+| :--- | :--- | :--- |
+| **Ground Nodes** | *Dynamic* | Real-time monitoring of **Soil Moisture**, **Seismic Vibration ($G$)**, and **Pressure Trends ($\Delta P$)**. |
+| **Satellite** | *Static* | **NDVI (Vegetation Index)** establishes a baseline risk. *Logic: Low NDVI (Deforestation) = High Soil Instability Factor.* |
+
+#### B. Temporal Analytics: "Rate-of-Change" (RoC) Logic 📉
+Instead of relying solely on static thresholds, the engine analyzes **Time-Series Data** to detect rapid anomalies:
+* **Derivative Analysis ($d/dt$):** Calculates the velocity of sensor changes. A moisture spike of **$>10\%$ in 5 mins** triggers a "Flash Flood" alert even if absolute saturation is below critical limits.
+* **Noise Filtration:** Implements statistical averaging algorithms to reject sensor jitter and false positives.
+
+#### C. Geospatial Intelligence (GIS Dashboard) 🗺️
+The Python engine (utilizing `Matplotlib` & `Cartopy`) transforms raw telemetry into actionable decision support layers:
+* **Dynamic Risk Polygons:** Applies **Convex Hull** algorithms to delineate high-risk clusters dynamically.
+* **Wildfire Heatmaps:** Generates interpolated risk layers based on Temperature/Humidity anomalies and Fire Weather Index (FWI).
+* **Predictive Forecasting:** Plots 7-day trend projections by comparing Historical Actuals vs. AI-Predicted models.
+
+---
+**Tech Stack:** `Python 3.9+` • `Scikit-learn` • `NumPy` • `Cartopy` • `SciPy`
 
 ---
 
@@ -49,7 +70,7 @@ A centralized server running Python & Scikit-learn.
 
 ### A. "Rate-of-Change" (RoC) Trigger
 Unlike passive loggers that only alarm at static thresholds (e.g., >90% moisture), ATLAS nodes calculate the **first derivative (velocity)** of sensor data.
-* *Scenario:* If soil moisture spikes >10% in 5 minutes, the system triggers a **"Flash Flood Alert"** immediately, even if the absolute value is only 50%.
+* *Scenario:* If soil moisture spikes **>10% in 5 minutes**, the system triggers a **"Flash Flood Alert"** immediately, even if the absolute value is only 50%.
 
 ### B. Master-Slave Satellite Core
 To prevent the satellite from "freezing" during image processing, we utilize a dual-core distributed architecture:
@@ -59,6 +80,16 @@ To prevent the satellite from "freezing" during image processing, we utilize a d
 ### C. Adaptive Power Management
 * **Normal Mode:** Deep Sleep for 5 minutes (<20µA).
 * **Urgent Mode:** Deep Sleep for 1 minute (Active Monitoring) upon detecting RoC anomalies.
+
+### D. Multi-Modal Sensor Fusion (Ground + Space)
+The system bridges the gap between IoT and Remote Sensing by fusing **Dynamic Telemetry** (Ground Nodes) with **Static Satellite Baselines** (NDVI).
+* *Innovation:* The AI assigns a "Vulnerability Weight" based on vegetation health. An area with **Low NDVI (Deforestation)** will trigger a Landslide Alert at a lower soil moisture threshold compared to a dense forest, significantly reducing false negatives.
+
+### E. Predictive GIS & Temporal Forecasting (AI-Driven) 📉
+Moving beyond reactive alerts, the Ground Station functions as a **"Time Machine"** for disaster management:
+* **Short-Term (Tactical):** Extrapolates Barometric Pressure trends ($\Delta P$) to predict storm surges **12 hours in advance**.
+* **Long-Term (Strategic):** Utilizes **Linear Regression** on 30-day historical data to project disaster risk trends for the **next 7 days**, enabling authorities to allocate resources (food, medicine) *before* the crisis peaks.
+* **Visualization:** Uses **Convex Hull algorithms** to dynamically delineate high-risk zones on the map.
 
 ---
 
@@ -107,16 +138,47 @@ To prevent the satellite from "freezing" during image processing, we utilize a d
 
 ## 📊 Telemetry Data Format
 
-### 1. Ground Node Packet (Uplink)
-Format: `GN,[ID],[TYPE],[TEMP],[HUM],[PRES],[SOIL],[VIB],[LAT],[LON]`
+### 1. Ground Node Packet (Uplink - LoRa)
+Raw sensor data transmitted from Edge Nodes to the Satellite/Gateway.
+* **Format:** `GN,[ID],[TYPE],[TEMP],[HUM],[PRES],[SOIL],[VIB],[LAT],[LON]`
 
 | Field | Description | Example |
 | :--- | :--- | :--- |
-| **TYPE** | Hazard Class | `NORMAL`, `FIRE_RISK`, `STORM_ALERT`, `LANDSLIDE` |
-| **PRES** | Pressure (hPa) | `990.2` (Low pressure indicates storm) |
-| **VIB** | Vibration (G) | `1.5` (Seismic activity) |
+| **TYPE** | Detected Hazard Class | `NORMAL`, `FIRE_RISK`, `STORM_ALERT`, `LANDSLIDE` |
+| **PRES** | Atmospheric Pressure (hPa) | `990.2` (Low pressure indicates storm approach) |
+| **VIB** | Seismic Vibration ($G$) | `1.5` (Indicates ground instability) |
+| **SOIL** | Soil Moisture (%) | `85.4` (Near saturation point) |
 
 ### 2. Satellite Heartbeat (Downlink)
-Format: `TM:[VOLT],[LAT],[LON],[ALT],[STATUS]`
+System health status and piggybacked ground alerts broadcasted to the Ground Station.
+* **Format:** `TM:[VOLT],[LAT],[LON],[ALT],[STATUS],[RELAY_COUNT]`
 
+| Field | Description | Example |
+| :--- | :--- | :--- |
+| **VOLT** | Battery Voltage (V) | `4.1` (LiPo level) |
+| **STATUS** | FSM State | `IDLE`, `LISTENING`, `IMG_TX` (Image Transmitting) |
+| **RELAY** | Buffered Packets Count | `5` (Number of ground alerts in queue) |
+
+### 3. AI Predictive Output (Processed API JSON)
+Final intelligence generated by the **Random Forest Engine**, sent to the GIS Dashboard.
+
+```json
+{
+  "node_id": 101,
+  "timestamp": "2026-02-14T12:00:00Z",
+  "risk_analysis": {
+    "probability_score": 88.5,       // 0-100% Disaster Probability
+    "hazard_type": "LANDSLIDE",      // Predicted Disaster Mode
+    "severity_level": "CRITICAL"     // LOW, MODERATE, HIGH, CRITICAL
+  },
+  "sensor_fusion": {
+    "soil_saturation": 85.0,         // Ground Truth
+    "ndvi_baseline": 0.21,           // Satellite Data (Low = Deforestation)
+    "pressure_trend": -3.5           // RoC: Dropping fast (-3.5hPa/hr)
+  },
+  "forecast": {
+    "12h_prediction": "STORM_SURGE", // Short-term tactical forecast
+    "7d_trend": "INCREASING"         // Long-term strategic trend
+  }
+}
 ---
