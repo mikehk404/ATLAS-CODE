@@ -211,15 +211,17 @@ It is recommended to use a virtual environment.
 
 Follow these steps to reproduce the system simulations and run the AI model.
 
-### Step 1: Hardware Setup (If testing physical nodes)
-1. Open the `/hardware` folder.
-2. Flash `ground_node.ino` to the ESP32-WROOM boards.
-3. Flash `sat_master.ino` to the ESP32-S3 and `sat_slave.ino` to the ESP32-CAM.
-4. Ensure the LoRa Gateway is connected to your PC via USB.
+### Step 1: Hardware Firmware (ESP32)
+1. Open the source code files for the microcontrollers using your preferred IDE (e.g., Arduino IDE).
+2. For the Ground Node: Flash the file `gns_code.cpp` to the ESP32 board.
+3. For the CubeSat 1U: Flash `satellite_codev5_master.cpp` to the ESP32-S3 and `satellite_codev5_slave.cpp` to the ESP32-CAM.
+
+*(Note: If testing via Wokwi Simulator, please refer to the simulation links provided in the main report).*
 
 ### Step 2: AI Simulation & Dashboard (Software Demo)
-If you are evaluating the software without physical hardware, you can run the provided synthetic dataset simulation.
+To evaluate the software and Machine Learning logic without physical hardware, run the provided synthetic simulation script.
 
-1. Navigate to the `/software` directory:
+1. Ensure the dataset file `nodes_data.txt` is in the same directory as the Python script.
+2. Install the required Python dependencies:
    ```bash
-   cd software
+   pip install scikit-learn numpy pandas folium cartopy
