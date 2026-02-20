@@ -1,4 +1,4 @@
-# 📡 ATLAS_ASCEND 1.2 - Integrated Disaster Warning Ecosystem
+# ATLAS_ASCEND 1.2 - Integrated Disaster Warning Ecosystem
 
 ![Status](https://img.shields.io/badge/Status-Release_Candidate-success?style=flat-square)
 ![Hardware](https://img.shields.io/badge/Hardware-ESP32_S3_%7C_ESP32_CAM_%7C_ESP32_WROOM-blue?style=flat-square)
@@ -7,11 +7,11 @@
 
 > **Team:** VN7-ATLAS  
 > **Event:** ASCEND 2026  
-> **Version:** 5.2 (Hybrid Ground-Satellite Architecture)
+> **Version:** 5 (Hybrid Ground-Satellite Architecture)
 
 ---
 
-## 📖 Project Overview
+## Project Overview
 
 **ATLAS_ASCEND 1.2** is a comprehensive disaster monitoring ecosystem designed for infrastructure-denied regions. It integrates a distributed **Ground Sensor Network (GSN)** with a **CubeSat Relay Node** and an **AI-driven Ground Station** to provide resilient early warnings for landslides, floods, and forest fires.
 
@@ -19,11 +19,11 @@ The system moves beyond traditional "Threshold-based" monitoring by implementing
 
 ---
 
-## 🏗️ System Architecture
+## System Architecture
 
 The ecosystem is defined by three synchronized operational layers:
 
-### 1. 🌍 GROUND SEGMENT (The "Fab Four" Sensor Nodes)
+### 1. GROUND SEGMENT (Ground Sensors Node - GNS)
 Distributed autonomous nodes deployed in high-risk zones (mountains, riverbanks).
 * **MCU:** ESP32-WROOM-32 (Optimized for Deep Sleep).
 * **Sensor Stack ("The Fab Four"):**
@@ -33,16 +33,16 @@ Distributed autonomous nodes deployed in high-risk zones (mountains, riverbanks)
     4.  **Geolocation:** NEO-M8N GNSS (Precise Hazard Mapping).
 * **Edge Logic:** Performs **Rate-of-Change (RoC)** analysis to detect rapid environmental shifts (e.g., Flash Floods) before critical thresholds are reached.
 
-### 2. 🛰️ SPACE SEGMENT (1U CubeSat Relay)
+### 2. SPACE SEGMENT (1U CubeSat Relay)
 A 1U Satellite acting as a Data Relay and Optical Verification node.
 * **Master Node (ESP32-S3):** Handles Navigation (GPS), Telemetry (LoRa), and Mission Control via **FreeRTOS**.
 * **Slave Node (ESP32-CAM):** Dedicated to High-Resolution Imaging and buffering via a custom **Binary Chunking Protocol**.
 
-### 3. 🖥️ PROCESSING SEGMENT (Predictive Analytics Engine)
+### 3. PROCESSING SEGMENT (AI Ground System)
 
 The Ground Station functions as the ecosystem's **Central Intelligence Core**, designed to transition disaster management from *reactive monitoring* to *proactive forecasting*. It performs **Multi-Modal Data Fusion**, aggregating real-time telemetry from the Ground Mesh Network with satellite imagery baselines.
 
-#### A. Core Architecture: Sensor Fusion & Machine Learning 🧠
+#### A. Core Architecture: Sensor Fusion & Machine Learning 
 The system utilizes a **Random Forest Regressor** (via `scikit-learn`) to model non-linear environmental correlations, generating a precise **Disaster Probability Score ($0-100\%$)**.
 
 | Input Source | Data Type | Function in Model |
@@ -50,12 +50,12 @@ The system utilizes a **Random Forest Regressor** (via `scikit-learn`) to model 
 | **Ground Nodes** | *Dynamic* | Real-time monitoring of **Soil Moisture**, **Seismic Vibration ($G$)**, and **Pressure Trends ($\Delta P$)**. |
 | **Satellite** | *Static* | **NDVI (Vegetation Index)** establishes a baseline risk. *Logic: Low NDVI (Deforestation) = High Soil Instability Factor.* |
 
-#### B. Temporal Analytics: "Rate-of-Change" (RoC) Logic 📉
+#### B. Temporal Analytics: "Rate-of-Change" (RoC) Logic 
 Instead of relying solely on static thresholds, the engine analyzes **Time-Series Data** to detect rapid anomalies:
 * **Derivative Analysis ($d/dt$):** Calculates the velocity of sensor changes. A moisture spike of **$>10\%$ in 5 mins** triggers a "Flash Flood" alert even if absolute saturation is below critical limits.
 * **Noise Filtration:** Implements statistical averaging algorithms to reject sensor jitter and false positives.
 
-#### C. Geospatial Intelligence (GIS Dashboard) 🗺️
+#### C. Geospatial Intelligence (GIS Dashboard) 
 The Python engine (utilizing `Matplotlib` & `Cartopy`) transforms raw telemetry into actionable decision support layers:
 * **Dynamic Risk Polygons:** Applies **Convex Hull** algorithms to delineate high-risk clusters dynamically.
 * **Wildfire Heatmaps:** Generates interpolated risk layers based on Temperature/Humidity anomalies and Fire Weather Index (FWI).
@@ -66,7 +66,7 @@ The Python engine (utilizing `Matplotlib` & `Cartopy`) transforms raw telemetry 
 
 ---
 
-## 🚀 Key Engineering Innovations
+## Key Engineering Innovations
 
 ### A. "Rate-of-Change" (RoC) Trigger
 Unlike passive loggers that only alarm at static thresholds (e.g., >90% moisture), ATLAS nodes calculate the **first derivative (velocity)** of sensor data.
@@ -85,7 +85,7 @@ To prevent the satellite from "freezing" during image processing, we utilize a d
 The system bridges the gap between IoT and Remote Sensing by fusing **Dynamic Telemetry** (Ground Nodes) with **Static Satellite Baselines** (NDVI).
 * *Innovation:* The AI assigns a "Vulnerability Weight" based on vegetation health. An area with **Low NDVI (Deforestation)** will trigger a Landslide Alert at a lower soil moisture threshold compared to a dense forest, significantly reducing false negatives.
 
-### E. Predictive GIS & Temporal Forecasting (AI-Driven) 📉
+### E. Predictive GIS & Temporal Forecasting (AI-Driven)
 Moving beyond reactive alerts, the Ground Station functions as a **"Time Machine"** for disaster management:
 * **Short-Term (Tactical):** Extrapolates Barometric Pressure trends ($\Delta P$) to predict storm surges **12 hours in advance**.
 * **Long-Term (Strategic):** Utilizes **Linear Regression** on 30-day historical data to project disaster risk trends for the **next 7 days**, enabling authorities to allocate resources (food, medicine) *before* the crisis peaks.
@@ -93,7 +93,7 @@ Moving beyond reactive alerts, the Ground Station functions as a **"Time Machine
 
 ---
 
-## 🔌 Pin Mapping (Hardware Wiring)
+## Pin Mapping (Hardware Wiring)
 
 ### 1. Ground Sensor Node (ESP32-WROOM)
 | Component | Pin Name | GPIO (ESP32) | Note |
@@ -136,7 +136,7 @@ Moving beyond reactive alerts, the Ground Station functions as a **"Time Machine
 
 ---
 
-## 📊 Telemetry Data Format
+## Telemetry Data Format
 
 ### 1. Ground Node Packet (Uplink - LoRa)
 Raw sensor data transmitted from Edge Nodes to the Satellite/Gateway.
@@ -184,7 +184,7 @@ Final intelligence generated by the **Random Forest Engine**, sent to the GIS Da
 ```
 ---
 
-## 📦 Dependencies & Libraries
+## Dependencies & Libraries
 
 To compile and run the project, ensure the following libraries and environments are installed.
 
@@ -224,4 +224,8 @@ To evaluate the software and Machine Learning logic without physical hardware, r
 1. Ensure the dataset file `nodes_data.txt` is in the same directory as the Python script.
 2. Install the required Python dependencies:
    ```bash
-   pip install scikit-learn numpy pandas folium cartopy
+   download python (3.x -> x>8)
+    cd path\to\your\folder
+    python -m venv env
+    env\Scripts\activate
+    pip install folium numpy matplotlib scipy cartopy
