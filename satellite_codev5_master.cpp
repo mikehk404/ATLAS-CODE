@@ -180,6 +180,7 @@ void TaskSystem(void * parameter) {
                 hasRelayData = false; 
                 relayQueue = ""; 
             }
+            // Final Packet Format: "TM:VOLT,LAT,LON,ALT,STATUS; REL_GNS:GN,ID,TYPE,TEMP,HUM,PRES,SOIL,VIB,LAT,LON"
             
             LoRa.beginPacket(); 
             LoRa.print(packet); 
