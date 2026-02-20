@@ -1,10 +1,5 @@
 # ATLAS_ASCEND 1.2 - Integrated Disaster Warning Ecosystem
 
-![Status](https://img.shields.io/badge/Status-Release_Candidate-success?style=flat-square)
-![Hardware](https://img.shields.io/badge/Hardware-ESP32_S3_%7C_ESP32_CAM_%7C_ESP32_WROOM-blue?style=flat-square)
-![Telemetry](https://img.shields.io/badge/Telemetry-LoRa_433MHz-orange?style=flat-square)
-![AI-Engine](https://img.shields.io/badge/AI_Engine-Scikit_Learn_%7C_RandomForest-red?style=flat-square)
-
 > **Team:** VN7-ATLAS  
 > **Event:** ASCEND 2026  
 > **Version:** 5 (Hybrid Ground-Satellite Architecture)
@@ -13,7 +8,7 @@
 
 ## Project Overview
 
-**ATLAS_ASCEND 1.2** is a comprehensive disaster monitoring ecosystem designed for infrastructure-denied regions. It integrates a distributed **Ground Sensor Network (GSN)** with a **CubeSat Relay Node** and an **AI-driven Ground Station** to provide resilient early warnings for landslides, floods, and forest fires.
+**ATLAS_ASCEND 1.2** is a comprehensive disaster warning ecosystem designed for infrastructure-denied regions. It integrates a distributed **Ground Sensor Network (GSN)** with a **CubeSat Relay Node** and an **AI-driven Ground Station** to provide reliable early warnings for landslides, floods, and forest fires.
 
 The system moves beyond traditional "Threshold-based" monitoring by implementing **"Proactive Detection"** philosophy, utilizing **Rate-of-Change (RoC)** algorithms at the edge and **Machine Learning** at the core.
 
