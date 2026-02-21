@@ -17,7 +17,7 @@ Source files for the microcontrollers operating at the edge and in orbit.
 * `satellite_codev5_master.cpp`: Firmware for the CubeSat 1U Master Node (`ESP32-S3`). Handles telemetry, navigation, and LoRa relay.
 * `satellite_codev5_slave.cpp`: Firmware for the CubeSat 1U Slave Node (`ESP32-CAM`). Handles image capture and chunking.
 
-### 2. AI Ground System (Python)
+### 2. Processing System (Python)
 Scripts for data simulation, model training, and the main GIS dashboard.
 * `generate_history.py`: Generates synthetic historical sensor data and saves it to `history.csv` to build the initial baseline.
 * `train_model.py`: Trains the Random Forest model using historical data and exports the compiled model as `rf_landslide.joblib`.
