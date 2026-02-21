@@ -1,127 +1,94 @@
-# ATLAS_ASCEND 1.2 - Integrated Disaster Warning Ecosystem
+# ATLAS_ASCEND 1.2 - Source Code & Implementation Guide
+> **Team:** VN7-ATLAS  | **Event:** ASCEND 2026  | **Version:** 5 (Hybrid Ground-Satellite Architecture)
 
-> **Team:** VN7-ATLAS  
-> **Event:** ASCEND 2026  
-> **Version:** 5 (Hybrid Ground-Satellite Architecture)
-
----
-
-## Project Overview
-
-**ATLAS_ASCEND 1.2** is a comprehensive disaster warning ecosystem designed for infrastructure-denied regions. It integrates a distributed **Ground Sensor Network (GSN)** with a **CubeSat Relay Node** and an **AI-driven Ground Station** to provide reliable early warnings for landslides, floods, and forest fires.
-
-The system moves beyond traditional "Threshold-based" monitoring by implementing **"Proactive Detection"** philosophy, utilizing **Rate-of-Change (RoC)** algorithms at the edge and **Machine Learning** at the core.
+This repository contains the source code, machine learning pipeline, and hardware wiring schematics for the ATLAS_ASCEND disaster early warning ecosystem. For the full theoretical background and architecture design, please refer to our main **Technical Report**.
 
 ---
 
-## System Architecture
+## Repository Structure
 
-The ecosystem is defined by three synchronized operational layers:
+The project is divided into two main domains: Hardware Firmware (C++) and the AI Ground System (Python). 
 
-### 1. GROUND SEGMENT (Ground Sensors Node - GNS)
-Distributed autonomous nodes deployed in high-risk zones (mountains, riverbanks).
-* **MCU:** ESP32-WROOM-32 (Optimized for Deep Sleep).
-* **Sensor Stack ("The Fab Four"):**
-    1.  **Soil:** Capacitive Moisture Sensor (Landslide/Flood Saturation).
-    2.  **Kinematics:** MPU-6050 6-DOF IMU (Seismic Activity/Slope Stability).
-    3.  **Climate:** BME280 (Temp/Hum/Pressure for Fire & Storm Prediction).
-    4.  **Geolocation:** NEO-M8N GNSS (Precise Hazard Mapping).
-* **Edge Logic:** Performs **Rate-of-Change (RoC)** analysis to detect rapid environmental shifts (e.g., Flash Floods) before critical thresholds are reached.
 
-### 2. SPACE SEGMENT (1U CubeSat Relay)
-A 1U Satellite acting as a Data Relay and Optical Verification node.
-* **Master Node (ESP32-S3):** Handles Navigation (GPS), Telemetry (LoRa), and Mission Control via **FreeRTOS**.
-* **Slave Node (ESP32-CAM):** Dedicated to High-Resolution Imaging and buffering via a custom **Binary Chunking Protocol**.
 
-### 3. PROCESSING SEGMENT (AI Ground System)
+### 1. Hardware Firmware (C++)
+Source files for the microcontrollers operating at the edge and in orbit.
+* `gns_code.cpp`: Firmware for the Ground Sensor Node (`ESP32-WROOM`). Handles sensor polling and LoRa transmission.
+* `satellite_codev5_master.cpp`: Firmware for the CubeSat 1U Master Node (`ESP32-S3`). Handles telemetry, navigation, and LoRa relay.
+* `satellite_codev5_slave.cpp`: Firmware for the CubeSat 1U Slave Node (`ESP32-CAM`). Handles image capture and chunking.
 
-The Ground Station functions as the ecosystem's **Central Intelligence Core**, designed to transition disaster management from *reactive monitoring* to *proactive forecasting*. It performs **Multi-Modal Data Fusion**, aggregating real-time telemetry from the Ground Mesh Network with satellite imagery baselines.
-
-#### A. Core Architecture: Sensor Fusion & Machine Learning 
-The system utilizes a **Random Forest Regressor** (via `scikit-learn`) to model non-linear environmental correlations, generating a precise **Disaster Probability Score ($0-100\%$)**.
-
-| Input Source | Data Type | Function in Model |
-| :--- | :--- | :--- |
-| **Ground Nodes** | *Dynamic* | Real-time monitoring of **Soil Moisture**, **Seismic Vibration ($G$)**, and **Pressure Trends ($\Delta P$)**. |
-| **Satellite** | *Static* | **NDVI (Vegetation Index)** establishes a baseline risk. *Logic: Low NDVI (Deforestation) = High Soil Instability Factor.* |
-
-#### B. Temporal Analytics: "Rate-of-Change" (RoC) Logic 
-Instead of relying solely on static thresholds, the engine analyzes **Time-Series Data** to detect rapid anomalies:
-* **Derivative Analysis ($d/dt$):** Calculates the velocity of sensor changes. A moisture spike of **$>10\%$ in 5 mins** triggers a "Flash Flood" alert even if absolute saturation is below critical limits.
-* **Noise Filtration:** Implements statistical averaging algorithms to reject sensor jitter and false positives.
-
-#### C. Geospatial Intelligence (GIS Dashboard) 
-The Python engine (utilizing `Matplotlib` & `Cartopy`) transforms raw telemetry into actionable decision support layers:
-* **Dynamic Risk Polygons:** Applies **Convex Hull** algorithms to delineate high-risk clusters dynamically.
-* **Wildfire Heatmaps:** Generates interpolated risk layers based on Temperature/Humidity anomalies and Fire Weather Index (FWI).
-* **Predictive Forecasting:** Plots 7-day trend projections by comparing Historical Actuals vs. AI-Predicted models.
-
----
-**Tech Stack:** `Python 3.9+` • `Scikit-learn` • `NumPy` • `Cartopy` • `SciPy`
+### 2. AI Ground System (Python)
+Scripts for data simulation, model training, and the main GIS dashboard.
+* `generate_history.py`: Generates synthetic historical sensor data and saves it to `history.csv` to build the initial baseline.
+* `train_model.py`: Trains the Random Forest model using historical data and exports the compiled model as `rf_landslide.joblib`.
+* `sim_nodes.py`: Simulates a CubeSat LoRa downlink pass, generating correctly formatted telemetry packets (`exc.txt`).
+* `predict_inference.py`: The core inference engine. Loads the `.joblib` model to process incoming node data and outputs risk probabilities.
+* **`AI_Ground_System.py`**: **[MAIN ENTRY POINT]** The primary application script. It parses incoming LoRa telemetry, imports `predict_inference.py` to calculate risk scores, and generates the interactive Folium/Cartopy GIS Dashboard.
 
 ---
 
-## Key Engineering Innovations
+## Getting Started (How to Run & Simulate)
 
-### A. "Rate-of-Change" (RoC) Trigger
-Unlike passive loggers that only alarm at static thresholds (e.g., >90% moisture), ATLAS nodes calculate the **first derivative (velocity)** of sensor data.
-* *Scenario:* If soil moisture spikes **>10% in 5 minutes**, the system triggers a **"Flash Flood Alert"** immediately, even if the absolute value is only 50%.
+### Phase 1: AI Simulation (Software-Only Test)
+You can evaluate the machine learning pipeline and generate the dashboard locally without physical hardware.
 
-### B. Master-Slave Satellite Core
-To prevent the satellite from "freezing" during image processing, we utilize a dual-core distributed architecture:
-* **Core 0 (Master):** Handles Telemetry & Navigation (High Priority).
-* **Core 1 (Slave):** Handles Image Compression & Fragmentation (Low Priority).
+**Prerequisites:** Python 3.9+
+```bash
+# 1. Navigate to your project folder
+cd path/to/your/folder
 
-### C. Adaptive Power Management
-* **Normal Mode:** Deep Sleep for 5 minutes (<20µA).
-* **Urgent Mode:** Deep Sleep for 1 minute (Active Monitoring) upon detecting RoC anomalies.
+# 2. Create and activate a virtual environment
+python -m venv env
 
-### D. Multi-Modal Sensor Fusion (Ground + Space)
-The system bridges the gap between IoT and Remote Sensing by fusing **Dynamic Telemetry** (Ground Nodes) with **Static Satellite Baselines** (NDVI).
-* *Innovation:* The AI assigns a "Vulnerability Weight" based on vegetation health. An area with **Low NDVI (Deforestation)** will trigger a Landslide Alert at a lower soil moisture threshold compared to a dense forest, significantly reducing false negatives.
+# On Windows:
+env\Scripts\activate
+# On Mac/Linux:
+# source env/bin/activate
 
-### E. Predictive GIS & Temporal Forecasting (AI-Driven)
-Moving beyond reactive alerts, the Ground Station functions as a **"Time Machine"** for disaster management:
-* **Short-Term (Tactical):** Extrapolates Barometric Pressure trends ($\Delta P$) to predict storm surges **12 hours in advance**.
-* **Long-Term (Strategic):** Utilizes **Linear Regression** on 30-day historical data to project disaster risk trends for the **next 7 days**, enabling authorities to allocate resources (food, medicine) *before* the crisis peaks.
-* **Visualization:** Uses **Convex Hull algorithms** to dynamically delineate high-risk zones on the map.
+# 3. Install required dependencies
+pip install numpy pandas scikit-learn matplotlib joblib lightgbm folium cartopy pyserial
+
+# 4. Run the AI Pipeline sequentially
+python generate_history.py   # Step A: Generate 90 days of synthetic history
+python train_model.py        # Step B: Train the AI model
+python sim_nodes.py          # Step C: Simulate satellite telemetry reception
+python AI_Ground_System.py   # Step D: Run the main dashboard to visualize results
+```
+### Phase 2: Hardware Setup (Physical Deployment)
+To flash the physical devices, ensure you have the **ESP32 Board Manager** installed in your Arduino IDE, along with the following libraries:
+* `LoRa` (by Sandeep Mistry)
+* `Adafruit BME280 Library` & `Adafruit MPU6050`
+* `TinyGPSPlus`
+
+**Flashing Instructions:**
+1. Flash `gns_code.cpp` to the **ESP32-WROOM** boards.
+2. Flash `satellite_codev5_master.cpp` to the **ESP32-S3**.
+3. Flash `satellite_codev5_slave.cpp` to the **ESP32-CAM**.
+
+
 
 ---
 
-## Pin Mapping (Hardware Wiring)
+## Hardware Reference: Pin Mapping
 
 ### 1. Ground Sensor Node (ESP32-WROOM)
-| Component | Pin Name | GPIO (ESP32) | Note |
+| Component | Pin Name | GPIO | Note |
 | :--- | :--- | :--- | :--- |
-| **LoRa (SX1278)** | NSS (CS) | 5 | SPI Bus |
-| | RST | 14 | |
-| | DIO0 | 2 | Interrupt |
-| **I2C Bus** | SDA | 42 | BME280 + MPU6050 |
-| | SCL | 41 | BME280 + MPU6050 |
-| **Soil Sensor** | Signal | 34 | **Analog Input Only** |
-| **GPS (NEO-M8N)** | TX | 16 | Connect to GPS TX |
-| | RX | 17 | Connect to GPS RX |
+| **LoRa (SX1278)** | NSS (CS) / RST / DIO0 | 5 / 14 / 2 | SPI Bus |
+| **Sensors (I2C)** | SDA / SCL | 42 / 41 | BME280 + MPU6050 |
+| **Soil Sensor** | Signal | 34 | Analog Input Only |
+| **GPS (NEO-M8N)** | TX / RX | 16 / 17 | Connect to GPS TX/RX |
 
-### 2. Satellite
-### Master Node (ESP32-S3)
-| Component | Pin Name | GPIO (S3) | Note |
+### 2. CubeSat Master Node (ESP32-S3)
+| Component | Pin Name | GPIO | Note |
 | :--- | :--- | :--- | :--- |
-| **LoRa (Ra-02)** | MISO | 13 | SPI Bus |
-| | MOSI | 11 | SPI Bus |
-| | SCK | 12 | SPI Bus |
-| | NSS (CS) | 10 | |
-| | RST | 5 | |
-| | DIO0 | 6 | |
-| **Sensors** | SDA | 42 | I2C Bus |
-| | SCL | 41 | I2C Bus |
-| **GPS (NEO-M8N)** | TX | 18 | Connect to GPS TX |
-| | RX | 17 | Connect to GPS RX |
-| **Slave Comm** | RX | 16 | **Connect to CAM U0T** |
-| | TX | 15 | **Connect to CAM U0R** |
+| **LoRa (Ra-02)** | MISO / MOSI / SCK | 13 / 11 / 12 | SPI Bus |
+| | NSS / RST / DIO0 | 10 / 5 / 6 | |
+| **Sensors (I2C)** | SDA / SCL | 42 / 41 | BME280 + MPU6050 |
+| **GPS (NEO-M8N)** | TX / RX | 18 / 17 | Connect to GPS TX/RX |
+| **Slave Comm** | RX / TX | 16 / 15 | Connect to CAM U0T/U0R |
 
-### Slave Node (ESP32-CAM)
-*Note: The ESP32-CAM uses internal wiring for the Camera and SD Card. Only UART and Power need to be connected.*
-
+### 3. CubeSat Slave Node (ESP32-CAM)
 | Pin Name | Connection | Description |
 | :--- | :--- | :--- |
 | **5V** | 5V Source | Requires stable >500mA source |
@@ -131,96 +98,29 @@ Moving beyond reactive alerts, the Ground Station functions as a **"Time Machine
 
 ---
 
-## Telemetry Data Format
+## Telemetry Data Formats
 
-### 1. Ground Node Packet (Uplink - LoRa)
-Raw sensor data transmitted from Edge Nodes to the Satellite/Gateway.
+### 1. Ground Node Packet (Uplink)
 * **Format:** `GN,[ID],[TYPE],[TEMP],[HUM],[PRES],[SOIL],[VIB],[LAT],[LON]`
-
-| Field | Description | Example |
-| :--- | :--- | :--- |
-| **TYPE** | Detected Hazard Class | `NORMAL`, `FIRE_RISK`, `STORM_ALERT`, `LANDSLIDE` |
-| **PRES** | Atmospheric Pressure (hPa) | `990.2` (Low pressure indicates storm approach) |
-| **VIB** | Seismic Vibration ($G$) | `1.5` (Indicates ground instability) |
-| **SOIL** | Soil Moisture (%) | `85.4` (Near saturation point) |
+* **Example:** `GN,12,LANDSLIDE,26.4,94.2,992.5,89.5,1.35,20.812350,105.331520`
 
 ### 2. Satellite Heartbeat (Downlink)
-System health status and piggybacked ground alerts broadcasted to the Ground Station.
-* **Format:** `TM:[VOLT],[LAT],[LON],[ALT],[STATUS],[RELAY_COUNT]`
+* **Format:** `TM:[VOLT],[LAT],[LON],[ALT],[STATUS] ; REL_GNS:[PIGGYBACKED_GROUND_DATA]`
+* **Example:** `TM:4.15,21.033333,105.850000,505120.50,OK ; REL_GNS:GN,12,LANDSLIDE...`
 
-| Field | Description | Example |
-| :--- | :--- | :--- |
-| **VOLT** | Battery Voltage (V) | `4.1` (LiPo level) |
-| **STATUS** | FSM State | `IDLE`, `LISTENING`, `IMG_TX` (Image Transmitting) |
-| **RELAY** | Buffered Packets Count | `5` (Number of ground alerts in queue) |
-
-### 3. AI Predictive Output (Processed API JSON)
-Final intelligence generated by the **Random Forest Engine**, sent to the GIS Dashboard.
-
+### 3. AI Predictive Output (JSON)
+Parsed output generated by the Random Forest Engine (`predict_inference.py`) for the dashboard.
 ```json
 {
   "node_id": 101,
   "timestamp": "2026-02-14T12:00:00Z",
   "risk_analysis": {
-    "probability_score": 88.5,       // 0-100% Disaster Probability
-    "hazard_type": "LANDSLIDE",      // Predicted Disaster Mode
-    "severity_level": "CRITICAL"     // LOW, MODERATE, HIGH, CRITICAL
+    "probability_score": 88.5,
+    "hazard_type": "LANDSLIDE"
   },
   "sensor_fusion": {
-    "soil_saturation": 85.0,         // Ground Truth
-    "ndvi_baseline": 0.21,           // Satellite Data (Low = Deforestation)
-    "pressure_trend": -3.5           // RoC: Dropping fast (-3.5hPa/hr)
-  },
-  "forecast": {
-    "12h_prediction": "STORM_SURGE", // Short-term tactical forecast
-    "7d_trend": "INCREASING"         // Long-term strategic trend
+    "soil_saturation": 85.0,
+    "ndvi_baseline": 0.21,
+    "pressure_trend": -3.5
   }
 }
-```
----
-
-## Dependencies & Libraries
-
-To compile and run the project, ensure the following libraries and environments are installed.
-
-### 1. Hardware (C++ / Arduino IDE)
-Ensure you have the ESP32 Board Manager installed in your IDE.
-* **LoRa:** `LoRa by Sandeep Mistry` (or `RadioLib`)
-* **Sensors:** * `Adafruit BME280 Library`
-  * `Adafruit MPU6050`
-  * `TinyGPSPlus` (for NEO-M8N)
-* **Core:** `FreeRTOS` (Built-in with ESP32 core)
-
-### 2. Software (Python AI & Ground Station)
-It is recommended to use a virtual environment.
-* `python >= 3.9`
-* `scikit-learn`
-* `numpy`
-* `pandas`
-* `folium` / `cartopy` (for GIS Mapping)
-* `pyserial` (for reading serial data from the LoRa Gateway)
-
----
-
-## ⚙️ How to Run & Simulate (Instructions)
-
-Follow these steps to reproduce the system simulations and run the AI model.
-
-### Step 1: Hardware Firmware (ESP32)
-1. Open the source code files for the microcontrollers using your preferred IDE (e.g., Arduino IDE).
-2. For the Ground Node: Flash the file `gns_code.cpp` to the ESP32 board.
-3. For the CubeSat 1U: Flash `satellite_codev5_master.cpp` to the ESP32-S3 and `satellite_codev5_slave.cpp` to the ESP32-CAM.
-
-*(Note: If testing via Wokwi Simulator, please refer to the simulation links provided in the main report).*
-
-### Step 2: AI Simulation & Dashboard (Software Demo)
-To evaluate the software and Machine Learning logic without physical hardware, run the provided synthetic simulation script.
-
-1. Ensure the dataset file `nodes_data.txt` is in the same directory as the Python script.
-2. Install the required Python dependencies:
-   ```bash
-   download python (3.x -> x>8)
-    cd path\to\your\folder
-    python -m venv env
-    env\Scripts\activate
-    pip install numpy pandas scikit-learn matplotlib joblib lightgbm
