@@ -223,4 +223,4 @@ To evaluate the software and Machine Learning logic without physical hardware, r
     cd path\to\your\folder
     python -m venv env
     env\Scripts\activate
-    pip install folium numpy matplotlib scipy cartopy
+    pip install numpy pandas scikit-learn matplotlib joblib lightgbm
